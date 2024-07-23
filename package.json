@@ -1,0 +1,17 @@
+{
+  "name": "sql-differt-viewer",
+  "version": "1.0.0",
+  "description": "A SQL Diff Viewer application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager . SQLDiffViewer --platform=win32 --arch=x64 --out=dist --overwrite"
+  },
+  "dependencies": {
+    "diff": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-packager": "^17.0.0"
+  }
+}

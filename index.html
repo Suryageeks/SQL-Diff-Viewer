@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SQL Diff Viewer</title>
+    <style>
+      body {
+        font-family: monospace;
+        white-space: pre;
+      }
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+      .box {
+        width: 30%;
+        height: 60vh;
+        overflow: auto;
+        border: 1px solid #ccc;
+        margin: 5px;
+      }
+      #diff-viewer {
+        width: 100%;
+        height: 60vh;
+        border: 1px solid #ccc;
+      }
+      .added {
+        background-color: #d4f4d4;
+      }
+      .removed {
+        background-color: #f4d4d4;
+      }
+      .unchanged {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SQL Diff Viewer</h1>
+
+    <button id="select-files">Select SQL Files</button>
+    <button id="compare-inputs">Compare SQL Inputs</button>
+
+    <h2>Original SQL File 1</h2>
+    <textarea
+      id="sql-input1"
+      class="box"
+      placeholder="Paste SQL script here..."
+    ></textarea>
+
+    <h2>Original SQL File 2</h2>
+    <textarea
+      id="sql-input2"
+      class="box"
+      placeholder="Paste SQL script here..."
+    ></textarea>
+
+    <h2>Differences</h2>
+    <iframe id="diff-viewer"></iframe>
+
+    <script>
+      document
+        .getElementById("select-files")
+        .addEventListener("click", async () => {
+          const files = await window.electron.selectFiles();
+          console.log("Selected files:", files);
+          if (files.length === 2) {
+            const [file1, file2] = files;
+            try {
+              const sql1 = await window.electron.readFile(file1);
+              const sql2 = await window.electron.readFile(file2);
+
+              document.getElementById("sql-input1").value = sql1;
+              document.getElementById("sql-input2").value = sql2;
+
+              const diffPath = await window.electron.processDiff(file1, file2);
+              console.log("Difference file path:", diffPath);
+              document.getElementById("diff-viewer").src = `file://${diffPath}`;
+            } catch (error) {
+              console.error("Error processing files:", error);
+            }
+          } else {
+            alert("Please select exactly two files.");
+          }
+        });
+
+      document
+        .getElementById("compare-inputs")
+        .addEventListener("click", async () => {
+          const sql1 = document.getElementById("sql-input1").value;
+          const sql2 = document.getElementById("sql-input2").value;
+
+          if (sql1 && sql2) {
+            try {
+              console.log("Comparing inputs...");
+              const diffPath = await window.electron.processInputDiff(
+                sql1,
+                sql2
+              );
+              console.log("Difference file path:", diffPath);
+              document.getElementById("diff-viewer").src = `file://${diffPath}`;
+            } catch (error) {
+              console.error("Error processing input:", error);
+            }
+          } else {
+            alert("Please enter SQL scripts in both text areas.");
+          }
+        });
+    </script>
+  </body>
+</html>
